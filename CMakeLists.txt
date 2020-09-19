@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+﻿cmake_minimum_required(VERSION 3.5)
 
 project(guiserialportreader LANGUAGES CXX)
 
@@ -24,7 +24,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    endif()
 #endif()
 
-find_package(Qt5 COMPONENTS Core Quick REQUIRED)
+find_package(Qt5 COMPONENTS Core Quick SerialPort REQUIRED)
 
 if(ANDROID)
     add_library(guiserialportreader SHARED
@@ -34,6 +34,7 @@ if(ANDROID)
 else()
     add_executable(guiserialportreader
       main.cpp
+      backend.cpp
       qml.qrc
     )
 endif()
@@ -41,4 +42,4 @@ endif()
 target_compile_definitions(guiserialportreader
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(guiserialportreader
-  PRIVATE Qt5::Core Qt5::Quick)
+  PRIVATE Qt5::Core Qt5::Quick Qt5::SerialPort)
