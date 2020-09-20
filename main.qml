@@ -30,7 +30,7 @@ Window {
             anchors.right: parent.right
             anchors.left: parent.left
             model: BackEnd.availablePortsNames
-            onCurrentIndexChanged: BackEnd.selectedPort = currentIndex
+            onCurrentIndexChanged: BackEnd.selectPort(currentIndex)
             displayText: currentIndex == -1 ? qsTr("No available ports found") : currentText
 
             Connections {

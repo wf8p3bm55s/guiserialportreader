@@ -10,7 +10,6 @@ class BackEnd : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringList availablePortsNames READ availablePortsNames NOTIFY availablePortsChanged)
-    Q_PROPERTY(int selectedPort WRITE setSelectedPort)
     Q_PROPERTY(QString readingHistory READ readingHistory NOTIFY readingHistoryChanged)
     QML_ELEMENT
 public:
@@ -20,8 +19,7 @@ public:
     QString readingHistory();
     void appendReadingHistory(QString text);
 
-    void setSelectedPort(int index);
-
+    Q_INVOKABLE void selectPort(int index);
     Q_INVOKABLE void updateAvailablePorts();
 signals:
     void availablePortsChanged();

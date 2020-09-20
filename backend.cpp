@@ -44,7 +44,7 @@ QString BackEnd::readingHistory()
     return mReadingHistory;
 }
 
-void BackEnd::setSelectedPort(int index)
+void BackEnd::selectPort(int index)
 {
     closeSelectedPort();
 

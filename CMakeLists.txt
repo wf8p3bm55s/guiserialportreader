@@ -31,6 +31,12 @@ if(ANDROID)
       main.cpp
       qml.qrc
     )
+elseif(WIN32)
+    add_executable(guiserialportreader WIN32
+      main.cpp
+      backend.cpp
+      qml.qrc
+    )
 else()
     add_executable(guiserialportreader
       main.cpp
