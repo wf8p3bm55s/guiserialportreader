@@ -30,8 +30,9 @@ Window {
             anchors.right: parent.right
             anchors.left: parent.left
             model: BackEnd.availablePortsNames
-            onCurrentIndexChanged: BackEnd.selectPort(currentIndex)
-            displayText: currentIndex == -1 ? qsTr("No available ports found") : currentText
+            currentIndex: BackEnd.selectedPortIndex
+            onCurrentIndexChanged: BackEnd.selectedPortIndex = currentIndex
+            displayText: currentIndex == -1 ? qsTr("Select port") : currentText
 
             Connections {
                 target: comboBox.popup
@@ -41,10 +42,6 @@ Window {
                 function onAboutToHide() {
                     BackEnd.updateAvailablePorts()
                 }
-            }
-
-            Component.onCompleted: {
-                BackEnd.updateAvailablePorts()
             }
         }
 

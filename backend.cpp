@@ -8,29 +8,33 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
     });
     connect(&mSelectedPort, &QSerialPort::errorOccurred,
     [&](QSerialPort::SerialPortError error) {
-        switch (error) {
-            case QSerialPort::NoError:
-                return;
-                break;
-
-            case QSerialPort::PermissionError:
-            case QSerialPort::DeviceNotFoundError:
-            case QSerialPort::ResourceError:
-                break;
-
-            default:
-                appendReadingHistory(tr("Port error. Code: ") +
-                                     QString::number(error));
-                break;
+        if (error == QSerialPort::NoError) {
+            return;
         }
 
         mSelectedPort.clearError();
+        QString message = tr("Error. Port name: %1. Error code: %2.").arg(
+                              mSelectedPort.portName(), QString::number(error));
+        appendReadingHistory(message);
+
+        if (error == QSerialPort::PermissionError ||
+                error == QSerialPort::DeviceNotFoundError ||
+                error == QSerialPort::ResourceError) {
+            mSelectedPort.setPort(QSerialPortInfo());
+
+            if (mSelectedPort.isOpen()) {
+                mSelectedPort.close();
+            }
+
+            setSelectedPortIndex(-1);
+        }
     });
+    setSelectedPortIndex(-1);
 }
 
 QStringList BackEnd::availablePortsNames()
 {
-    QStringList portNames;
+    QStringList portNames({""});
 
     foreach (const QSerialPortInfo &info, mAvailablePorts) {
         portNames.append(info.portName());
@@ -39,28 +43,46 @@ QStringList BackEnd::availablePortsNames()
     return portNames;
 }
 
+int BackEnd::selectedPortIndex()
+{
+    return mSelectedPortIndex;
+}
+
 QString BackEnd::readingHistory()
 {
     return mReadingHistory;
 }
 
-void BackEnd::selectPort(int index)
+void BackEnd::setSelectedPortIndex(int index)
 {
-    closeSelectedPort();
+    if (index == mSelectedPortIndex) {
+        return;
+    }
 
-    if (index != -1) {
-        QSerialPortInfo info = mAvailablePorts.at(index);
+    if (mSelectedPort.isOpen()) {
+        closeSelectedPort();
+    }
+
+    if (index < 1) {
+        mSelectedPort.setPort(QSerialPortInfo());
+    } else {
+        QSerialPortInfo info = mAvailablePorts.at(index - 1);
         mSelectedPort.setPort(info);
 
         if (!mSelectedPort.isOpen()) {
             if (!mSelectedPort.open(QIODevice::ReadOnly)) {
-                appendReadingHistory(tr("Cannot open port ") + info.portName());
+                appendReadingHistory(tr("Cannot open port. Port name: %1.")
+                                     .arg(info.portName()));
                 return;
             }
         }
 
-        appendReadingHistory(tr("Opened port ") + info.portName());
+        appendReadingHistory(tr("Opened port. Port name: %1.")
+                             .arg(info.portName()));
     }
+
+    mSelectedPortIndex = index;
+    emit selectedPortIndexChanged();
 }
 
 void BackEnd::appendReadingHistory(QString text)
@@ -77,9 +99,8 @@ void BackEnd::updateAvailablePorts()
 
 void BackEnd::closeSelectedPort()
 {
-    if (mSelectedPort.isOpen()) {
-        appendReadingHistory(tr("Closing port ") + mSelectedPort.portName());
-        mSelectedPort.clear(QSerialPort::Input);
-        mSelectedPort.close();
-    }
+    appendReadingHistory(tr("Closing port. Port name: %1.")
+                         .arg(mSelectedPort.portName()));
+    mSelectedPort.clear(QSerialPort::Input);
+    mSelectedPort.close();
 }
